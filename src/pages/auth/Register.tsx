@@ -33,24 +33,9 @@ const Register = () => {
 
     return (
         <div className="bg-background-light min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-            {/* Background Decoration Elements */}
-            <div className="fixed top-0 right-0 -z-10 w-1/3 h-1/3 opacity-20 pointer-events-none">
-                <div className="w-full h-full bg-gradient-to-br from-primary to-transparent blur-3xl rounded-full translate-x-1/2 -translate-y-1/2"></div>
-            </div>
-            <div className="fixed bottom-0 left-0 -z-10 w-1/4 h-1/4 opacity-10 pointer-events-none">
-                <div className="w-full h-full bg-gradient-to-tr from-primary to-transparent blur-3xl rounded-full -translate-x-1/2 translate-y-1/2"></div>
-            </div>
 
             {/* Registration Container */}
             <div className="w-full max-w-[440px]">
-                {/* Logo/Brand Icon Section */}
-                <div className="flex justify-center mb-8">
-                    <div className="bg-primary/10 p-3 rounded-xl">
-                        <span className="material-symbols-outlined text-primary text-3xl">
-                            account_balance_wallet
-                        </span>
-                    </div>
-                </div>
 
                 {/* Main Registration Card */}
                 <Card className="shadow-xl shadow-primary/5 border-primary/5">
