@@ -45,13 +45,10 @@ const Login = () => {
         <Card className="shadow-xl shadow-primary/5 border-primary/5">
           <CardContent className="p-8 md:p-10">
             {/* Header Text */}
-            <div className="text-center mb-8">
+            <div className="text-center mb-6">
               <h1 className="text-2xl font-bold text-slate-800 mb-2 tracking-tight">
                 Welcome Back
               </h1>
-              <p className="text-slate-500 text-sm">
-                Please enter your details to sign in
-              </p>
             </div>
 
             {/* Login Form */}
@@ -59,7 +56,7 @@ const Login = () => {
               {/* Email Field */}
               <div>
                 <Label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Email Address
+                  Email
                 </Label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -125,24 +122,6 @@ const Login = () => {
                 </div>
               </div>
 
-              {/* Remember Me */}
-              <div className="flex items-center">
-                <Checkbox
-                  id="remember-me"
-                  name="remember-me"
-                  checked={formData.rememberMe}
-                  onChange={(e) =>
-                    setFormData({ ...formData, rememberMe: e.target.checked })
-                  }
-                />
-                <Label
-                  htmlFor="remember-me"
-                  className="ml-2 block text-sm text-slate-600 cursor-pointer select-none"
-                >
-                  Keep me signed in
-                </Label>
-              </div>
-
               {/* Sign In Button */}
               <Button
                 type="submit"
@@ -185,7 +164,7 @@ const Login = () => {
         {/* Signup Link */}
         <p className="mt-8 text-center text-sm text-slate-500">
           Don't have an account?{' '}
-          <Link to="/signup" className="font-bold text-primary hover:underline">
+          <Link to="/register" className="font-bold text-primary hover:underline">
             Sign up for free
           </Link>
         </p>
