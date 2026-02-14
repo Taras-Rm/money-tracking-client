@@ -1,23 +1,69 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { useGoogleLogin } from '@react-oauth/google';
+import { api } from '@/services/api';
+import { authService } from '@/services/auth';
 
 const Login = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     rememberMe: false,
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement login logic
-    console.log('Login attempt:', formData);
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await api.login({
+        email: formData.email,
+        password: formData.password,
+      });
+      
+      authService.setToken(response.token);
+      navigate('/');
+      window.location.reload(); // Reload to update auth state
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await api.loginWithGoogle({
+          access_token: tokenResponse.access_token,
+        });
+        
+        authService.setToken(response.token);
+        navigate('/');
+        window.location.reload();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Google login failed');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    onError: (error) => {
+      setError('Google login failed. Please try again.');
+      console.error('Google login error:', error);
+    },
+  });
 
   return (
     <div className="bg-background-light min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
@@ -106,12 +152,20 @@ const Login = () => {
                 </div>
               </div>
 
+              {/* Error Message */}
+              {error && (
+                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">
+                  {error}
+                </div>
+              )}
+
               {/* Sign In Button */}
               <Button
                 type="submit"
-                className="w-full py-3 px-4 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold text-sm shadow-lg shadow-primary/20 transition-all transform active:scale-[0.98]"
+                disabled={isLoading}
+                className="w-full py-3 px-4 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold text-sm shadow-lg shadow-primary/20 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Sign In
+                {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
 
@@ -132,7 +186,9 @@ const Login = () => {
               <Button
                 type="button"
                 variant="outline"
-                className="flex items-center justify-center py-2.5 border-slate-200 hover:bg-slate-50 transition-colors w-full"
+                disabled={isLoading}
+                className="flex items-center justify-center py-2.5 border-slate-200 hover:bg-slate-50 transition-colors w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => loginWithGoogle()}
               >
                 <img
                   alt="Google Logo"

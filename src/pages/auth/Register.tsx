@@ -1,11 +1,15 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { useGoogleLogin } from '@react-oauth/google';
+import { api } from '@/services/api';
+import { authService } from '@/services/auth';
 
 const Register = () => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -14,22 +18,61 @@ const Register = () => {
     });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (formData.password !== formData.confirmPassword) {
-            alert('Passwords do not match');
+            setError('Passwords do not match');
             return;
         }
 
-        // TODO: Implement registration logic
-        console.log('Registration attempt:', {
-            name: formData.name,
-            email: formData.email,
-            password: formData.password,
-        });
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await api.register({
+                name: formData.name,
+                email: formData.email,
+                password: formData.password,
+            });
+            
+            authService.setToken(response.token);
+            navigate('/');
+            window.location.reload(); // Reload to update auth state
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Registration failed');
+        } finally {
+            setIsLoading(false);
+        }
     };
+
+    const loginWithGoogle = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            setIsLoading(true);
+            setError(null);
+
+            try {
+                const response = await api.loginWithGoogle({
+                    access_token: tokenResponse.access_token,
+                });
+                
+                authService.setToken(response.token);
+                navigate('/');
+                window.location.reload();
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Google sign up failed');
+            } finally {
+                setIsLoading(false);
+            }
+        },
+        onError: (error) => {
+            setError('Google sign up failed. Please try again.');
+            console.error('Google login error:', error);
+        },
+    });
 
     return (
         <div className="bg-background-light min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
@@ -171,13 +214,21 @@ const Register = () => {
                                 </div>
                             </div>
 
-                            {/* Sign Up Button */}
-                            <Button
-                                type="submit"
-                                className="w-full py-3 px-4 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold text-sm shadow-lg shadow-primary/20 transition-all transform active:scale-[0.98]"
-                            >
-                                Sign Up
-                            </Button>
+                             {/* Error Message */}
+                             {error && (
+                                 <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">
+                                     {error}
+                                 </div>
+                             )}
+
+                             {/* Sign Up Button */}
+                             <Button
+                                 type="submit"
+                                 disabled={isLoading}
+                                 className="w-full py-3 px-4 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold text-sm shadow-lg shadow-primary/20 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                             >
+                                 {isLoading ? 'Signing up...' : 'Sign Up'}
+                             </Button>
                         </form>
 
                         {/* Social Login Divider */}
@@ -192,13 +243,15 @@ const Register = () => {
                             </div>
                         </div>
 
-                        {/* Social Options */}
-                        <div className="mt-6">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="flex items-center justify-center py-2.5 border-slate-200 hover:bg-slate-50 transition-colors w-full"
-                            >
+                         {/* Social Options */}
+                         <div className="mt-6">
+                             <Button
+                                 type="button"
+                                 variant="outline"
+                                 disabled={isLoading}
+                                 className="flex items-center justify-center py-2.5 border-slate-200 hover:bg-slate-50 transition-colors w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                                 onClick={() => loginWithGoogle()}
+                             >
                                 <img
                                     alt="Google Logo"
                                     className="w-5 h-5 mr-2"
