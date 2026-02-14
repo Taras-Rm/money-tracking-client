@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SummaryCard from '@/components/dashboard/SummaryCard';
 import AnalysisPeriodCard from '@/components/dashboard/AnalysisPeriodCard';
 import TransactionsTable from '@/components/dashboard/TransactionsTable';
 import SpendingByCategory from '@/components/dashboard/SpendingByCategory';
 import SavingsGoalCard from '@/components/dashboard/SavingsGoalCard';
+import { api } from '@/services/api';
+import { authService } from '@/services/auth';
 
 interface Transaction {
   id: string;
@@ -18,6 +20,30 @@ interface Transaction {
 const Dashboard = () => {
   const navigate = useNavigate();
   const [currentPeriod, setCurrentPeriod] = useState('October 2023');
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const token = authService.getToken();
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      try {
+        // Fetch user data to validate token and get user info
+        await api.getMe(token);
+      } catch (error) {
+        // Token is invalid, remove it and redirect to login
+        authService.removeToken();
+        navigate('/login');
+      } finally {
+        setIsLoadingUser(false);
+      }
+    };
+
+    fetchUser();
+  }, [navigate]);
 
   // Mock data
   const mockTransactions: Transaction[] = [
@@ -95,6 +121,17 @@ const Dashboard = () => {
   const handleCreateGoal = () => {
     console.log('Create goal clicked');
   };
+
+  if (isLoadingUser) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

@@ -41,8 +41,8 @@ const Register = () => {
             
             authService.setToken(response.token);
             navigate('/');
-            window.location.reload(); // Reload to update auth state
         } catch (err) {
+            authService.removeToken(); // Remove invalid token
             setError(err instanceof Error ? err.message : 'Registration failed');
         } finally {
             setIsLoading(false);
@@ -61,8 +61,8 @@ const Register = () => {
                 
                 authService.setToken(response.token);
                 navigate('/');
-                window.location.reload();
             } catch (err) {
+                authService.removeToken(); // Remove invalid token
                 setError(err instanceof Error ? err.message : 'Google sign up failed');
             } finally {
                 setIsLoading(false);

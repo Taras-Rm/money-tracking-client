@@ -32,8 +32,8 @@ const Login = () => {
       
       authService.setToken(response.token);
       navigate('/');
-      window.location.reload(); // Reload to update auth state
     } catch (err) {
+      authService.removeToken(); // Remove invalid token
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setIsLoading(false);
@@ -52,8 +52,8 @@ const Login = () => {
         
         authService.setToken(response.token);
         navigate('/');
-        window.location.reload();
       } catch (err) {
+        authService.removeToken(); // Remove invalid token
         setError(err instanceof Error ? err.message : 'Google login failed');
       } finally {
         setIsLoading(false);

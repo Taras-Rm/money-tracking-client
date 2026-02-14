@@ -19,6 +19,14 @@ export interface AuthResponse {
   token: string;
 }
 
+export interface UserResponse {
+  user: {
+    id: number;
+    name: string;
+    email: string;
+  };
+}
+
 export const api = {
   async login(data: LoginRequest): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
@@ -66,6 +74,23 @@ export const api = {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || 'Google login failed');
+    }
+
+    return response.json();
+  },
+
+  async getMe(token: string): Promise<UserResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to get user data');
     }
 
     return response.json();
